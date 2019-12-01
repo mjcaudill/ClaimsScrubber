@@ -89,6 +89,7 @@
             this.rtbResults.Size = new System.Drawing.Size(356, 197);
             this.rtbResults.TabIndex = 5;
             this.rtbResults.Text = "";
+            this.rtbResults.TextChanged += new System.EventHandler(this.rtbResults_TextChanged);
             // 
             // frmClaimScrubber
             // 
