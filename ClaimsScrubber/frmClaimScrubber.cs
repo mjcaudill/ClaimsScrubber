@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace ClaimsScrubber
 {
-    public partial class Form1 : Form
+    public partial class frmClaimScrubber : Form
     {
-        public Form1()
+        public frmClaimScrubber()
         {
             InitializeComponent();
         }
@@ -33,13 +33,19 @@ namespace ClaimsScrubber
 
             OpenFileDialog openFileDiag = new OpenFileDialog();
 
-            openFileDiag.InitialDirectory = "c:\\";
+            string initPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+            openFileDiag.InitialDirectory = initPath;
             openFileDiag.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
             openFileDiag.FilterIndex = 1;
             openFileDiag.RestoreDirectory = true;
 
             openFileDiag.ShowDialog();
+        }
 
+        private void Close_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

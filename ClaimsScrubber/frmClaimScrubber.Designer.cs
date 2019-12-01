@@ -1,6 +1,6 @@
 ﻿namespace ClaimsScrubber
 {
-    partial class Form1
+    partial class frmClaimScrubber
     {
         /// <summary>
         /// Required designer variable.
@@ -54,6 +54,7 @@
             this.Close.TabIndex = 1;
             this.Close.Text = "Close";
             this.Close.UseVisualStyleBackColor = true;
+            this.Close.Click += new System.EventHandler(this.Close_Click);
             // 
             // lblFileName
             // 
@@ -89,7 +90,7 @@
             this.rtbResults.TabIndex = 5;
             this.rtbResults.Text = "";
             // 
-            // Form1
+            // frmClaimScrubber
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -100,8 +101,8 @@
             this.Controls.Add(this.lblFileName);
             this.Controls.Add(this.Close);
             this.Controls.Add(this.btnScrub);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "frmClaimScrubber";
+            this.Text = "Claim Scrubber";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
