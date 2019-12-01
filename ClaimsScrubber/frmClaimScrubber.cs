@@ -140,18 +140,21 @@ namespace ClaimsScrubber
                 4 - Service Code, modifiers
                 */
 
-                while (SegCount > 0)
+
+                int ib = 0;
+                foreach (Match m in Regex.Matches(fileContents, "(?s)\nST(.+?)\nSE(.+?)(\r|$)"))
                 {
-                    indexB = fileContents.IndexOf("\nSE*", startB, endB - startB);
-                    startB = indexB;
-                    indexB = fileContents.IndexOf('\n', indexB, endB - startB);
-                    indexA = fileContents.IndexOf("\nST*", startA, endA - startA);
-                    startA = indexB;
-                    //rtbResults.AppendText("\n\n" + fileContents.Substring(indexA, indexB));
-                    segments[stringIndex,0] = fileContents.Substring(indexA, indexB);
-                    SegCount--;
-                    stringIndex++;
+                    segments[ib, 0] = Convert.ToString(m);
+                    ib++;
                 }
+
+                 /*for (int i = 0; i < segments.GetLength(0); i++)
+                 {
+                    rtbResults.AppendText("\nSegment: " + i + "\n\n");
+                    rtbResults.AppendText(segments[i, 0]);
+                }*/
+
+
 
                 //rtbResults.Text = segments[1];
 
