@@ -60,10 +60,6 @@ namespace ClaimsScrubber
             {
                 filePath = openFileDiag.FileName;
                 fileContents = File.ReadAllText(filePath);
-
-                rtbResults.Text = fileContents;
-                //Now that we have the file contents, we need to parse it into "loops".
-
             }
 
             
@@ -87,7 +83,7 @@ namespace ClaimsScrubber
         {
             /*Structure will be in a multi-dim vector of strings. 1st reference will be the Segment ID.
              Subsequent loop info will be stored afterwards. Since this is a simple scrubber I won't worry
-             about the details of each line, and will only save the info I'll be checking per loop.
+             about the details of each line, and will only save the info I'll be checking per segment/loop.
 
              Seg ID 0      Seg ID 1
              0 - NDC        0 - NDC
@@ -99,19 +95,75 @@ namespace ClaimsScrubber
             
             int stSegCount = 0;
             int seSegCount = 0;
-            foreach (Match m in Regex.Matches(fileContents, "ST"))
+            foreach (Match m in Regex.Matches(fileContents, "\nST"))
             {
                 stSegCount++;
             }
-            foreach (Match m in Regex.Matches(fileContents, "SE"))
+            foreach (Match m in Regex.Matches(fileContents, "\nSE"))
             {
                 seSegCount++;
             }
 
+            rtbResults.Text = Convert.ToString(stSegCount);
+
             //Ensure that every segment has a closing segment. Throw an error if not.
             if (stSegCount == seSegCount)
             {
-                rtbResults.Text = "Segment Count: " + Convert.ToString(stSegCount);
+                //rtbResults.Text = "Segment Count: " + Convert.ToString(stSegCount);
+
+                //If the segments match fine, begin parsing them out:
+                string operation = "";
+
+                int indexA = -1;
+                int indexB = -1;
+                int startA = 0;
+                int startB = 0;
+                int endA = fileContents.Length;
+                int endB = fileContents.Length;
+                int SegCount = stSegCount;
+                string[,] segments = new string[stSegCount, 5];
+                int stringIndex = 0;
+
+                /*
+                 0 1 2 3 4
+                 1 1 2 3 4
+                 2 1 2 3 4          
+                 
+                The firt element is always the full segment info.
+                We will use sub-commands to break it apart into smaller sections and assign those to values.
+
+
+                0 - Segment in full
+                1 - Admit Date
+                2 - Service Date
+                3 - NDC
+                4 - Service Code, modifiers
+                */
+
+                while (SegCount > 0)
+                {
+                    indexB = fileContents.IndexOf("\nSE*", startB, endB - startB);
+                    startB = indexB;
+                    indexB = fileContents.IndexOf('\n', indexB, endB - startB);
+                    indexA = fileContents.IndexOf("\nST*", startA, endA - startA);
+                    startA = indexB;
+                    //rtbResults.AppendText("\n\n" + fileContents.Substring(indexA, indexB));
+                    segments[stringIndex,0] = fileContents.Substring(indexA, indexB);
+                    SegCount--;
+                    stringIndex++;
+                }
+
+                //rtbResults.Text = segments[1];
+
+
+                //indexA = fileContents.IndexOf("ST*", startA, endA - startA);
+
+
+                //rtbResults.Text = Convert.ToString(indexB);
+                //rtbResults.Text = Convert.ToString(indexA);
+
+
+
             }
             else
             {
@@ -121,6 +173,7 @@ namespace ClaimsScrubber
                 rtbResults.SelectionColor = Color.Red;
                 rtbResults.Select(0, 0);
             }
+
 
 
 
