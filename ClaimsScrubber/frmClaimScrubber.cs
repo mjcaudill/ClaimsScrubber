@@ -26,6 +26,8 @@ namespace ClaimsScrubber
 
         private void btnScrub_Click(object sender, EventArgs e)
         {
+            fileContents = File.ReadAllText(txtbFilePath.Text);
+
             if (fileContents != "") {
                 parseSegs(fileContents);
             }
@@ -52,14 +54,15 @@ namespace ClaimsScrubber
             string initPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             openFileDiag.InitialDirectory = initPath;
-            openFileDiag.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            openFileDiag.Filter = "EDI X12 (*.X12)|*.X12|txt files (*.txt)|*.txt|All files (*.*)|*.*";
             openFileDiag.FilterIndex = 1;
             openFileDiag.RestoreDirectory = true;
 
             if (openFileDiag.ShowDialog() == DialogResult.OK)
             {
                 filePath = openFileDiag.FileName;
-                fileContents = File.ReadAllText(filePath);
+                txtbFilePath.Text = filePath;
+                //In case someone manually changes the text, we should utilize what's in the textbox:
             }
 
             
@@ -104,25 +107,16 @@ namespace ClaimsScrubber
                 seSegCount++;
             }
 
-            rtbResults.Text = Convert.ToString(stSegCount);
-
             //Ensure that every segment has a closing segment. Throw an error if not.
             if (stSegCount == seSegCount)
             {
-                //rtbResults.Text = "Segment Count: " + Convert.ToString(stSegCount);
 
                 //If the segments match fine, begin parsing them out:
-                string operation = "";
 
-                int indexA = -1;
-                int indexB = -1;
-                int startA = 0;
-                int startB = 0;
                 int endA = fileContents.Length;
                 int endB = fileContents.Length;
                 int SegCount = stSegCount;
-                string[,] segments = new string[stSegCount, 5];
-                int stringIndex = 0;
+                string[,] segments = new string[stSegCount, 5];                
 
                 /*
                  0 1 2 3 4
@@ -134,6 +128,10 @@ namespace ClaimsScrubber
 
 
                 0 - Segment in full
+                1 - CLM #
+                2 - Patient Last Name
+                3 - Patient First Name
+                4 - Patient MI
                 1 - Admit Date
                 2 - Service Date
                 3 - NDC
@@ -144,26 +142,29 @@ namespace ClaimsScrubber
                 int ib = 0;
                 foreach (Match m in Regex.Matches(fileContents, "(?s)\nST(.+?)\nSE(.+?)(\r|$)"))
                 {
+
                     segments[ib, 0] = Convert.ToString(m);
-                    ib++;
+                    //Account Number from the CLM segment
+
+                    //
+                    segments[ib, 1] = findBetween(segments[ib, 0], "CLM\\*", "\\*");
+                    //Grab the full name. We'll cut this down to the last name later.
+                    segments[ib, 2] = findBetween(segments[ib, 0], "NM1\\*IL\\*1\\*", "\r|$");
+                    segments[ib, 3] = findBetween(segments[ib, 2], "\\*", "\\*\\*\\*\\*");
+                    segments[ib, 4] = findBetween(segments[ib, 2], "\\*\\*\\*\\*", "\\*");
+                    //Cut the full name down to last name only.
+                    segments[ib, 2] = findBetween(segments[ib, 2], "^", "\\*");
+
+                 ib++;
                 }
 
-                 /*for (int i = 0; i < segments.GetLength(0); i++)
-                 {
-                    rtbResults.AppendText("\nSegment: " + i + "\n\n");
-                    rtbResults.AppendText(segments[i, 0]);
-                }*/
+                rtbResults.Text = segments[0, 1];
+                rtbResults.Text = segments[0, 2];
+                rtbResults.AppendText(segments[0, 3]);
+                rtbResults.AppendText(segments[0, 4]);
 
 
 
-                //rtbResults.Text = segments[1];
-
-
-                //indexA = fileContents.IndexOf("ST*", startA, endA - startA);
-
-
-                //rtbResults.Text = Convert.ToString(indexB);
-                //rtbResults.Text = Convert.ToString(indexA);
 
 
 
@@ -181,5 +182,13 @@ namespace ClaimsScrubber
 
 
         }
+        //Returns the string between the findBegin and findEnd
+        private string findBetween (string operateString, string findBegin, string findEnd)
+        {
+            Match n = Regex.Match(operateString, "(?<="+ findBegin + ")(.*?)(?=" + findEnd + ")");
+            //segments[ib, 1] = Convert.ToString(n);
+            return Convert.ToString(n);
+        }
+
     }
 }
